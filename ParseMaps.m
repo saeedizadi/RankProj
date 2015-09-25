@@ -4,9 +4,12 @@ function ParseMaps
 mapsDir = './maps/';
 gtDir = './groundtruth/';
 
-%List all maps and groundtruths in the directory
-mapNames = getFileNames(mapsDir,'png');
+%List all groundtruths in the directory
 gtNames = getFileNames(gtDir,'png');
+
+nImgs = 2;
+
+Posfixes = {'AC','AIM','CA','CB','FT','GB','HC','IM','IT','LC','MSS','RC','SEG','SR','SUN','SWD','SeR'};
 
 %Generate all possible indices for choosing 2 from 17
 C = nchoosek(1:17,2);
@@ -16,7 +19,7 @@ curr_pos2 = 0;
 create = true;
 
 %Load the images one by one
-for gt_iter=1:numel(gtNames)
+for gt_iter=1:nImgs
     
     fprintf('Evaluating image: %d\n',gt_iter);
     
@@ -29,9 +32,11 @@ for gt_iter=1:numel(gtNames)
     scoreAUC = zeros(1,17);
     
     for map_iter = 1:17
-        idx = (gt_iter-1)*17 + map_iter;
-        mapMat{map_iter} = imread(fullfile(mapsDir,mapNames{idx}));
+        
+        mapName = [gtNames{gt_iter}(1:end-4) '_' Posfixes{map_iter} '.png'];        
+        mapMat{map_iter} = imread(fullfile(mapsDir,mapName));
         scoreAUC(map_iter)= AUC_Borji(double(mapMat{map_iter}),double(gtMat));
+        
     end
     
     %For all possible selections, put the images alongside and compute the
