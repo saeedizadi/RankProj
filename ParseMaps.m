@@ -19,6 +19,10 @@ curr_pos2 = 0;
 create = true;
 
 %Load the images one by one
+
+fileID1 = fopen('data1.dat','w');
+fileID2 = fopen('data2.dat','w');
+fileIDLabel = fopen('label.dat','w');
 for gt_iter=1:nImgs
     
     fprintf('Evaluating image: %d\n',gt_iter);
@@ -33,7 +37,9 @@ for gt_iter=1:nImgs
     
     for map_iter = 1:17
         
-        mapName = [gtNames{gt_iter}(1:end-4) '_' Posfixes{map_iter} '.png'];        
+        mapName = [gtNames{gt_iter}(1:end-4) '_' Posfixes{map_iter} '.png'];
+        namesArchive{map_iter} = mapName;
+        
         mapMat{map_iter} = imread(fullfile(mapsDir,mapName));
         scoreAUC(map_iter)= AUC_Borji(double(mapMat{map_iter}),double(gtMat));
         
@@ -43,25 +49,22 @@ for gt_iter=1:nImgs
     %label of them
     for iter = 1:size(C,1)
         
-        idx1 = C(iter,1);
-        map1Mat = mapMat{idx1};
-        
+        idx1 = C(iter,1);        
         idx2 = C(iter,2);
-        map2Mat = mapMat{idx2};
         
         if scoreAUC(idx1) > scoreAUC(idx2)
             label = 1;
         else
             label = 0;
         end
-        
-        map1Mat = imresize(map1Mat,[256,256]);
-        map2Mat = imresize(map2Mat,[256,256]);
-        
+
+        fprintf(fileID1,'%s\n',namesArchive{idx1});
+        fprintf(fileID2,'%s\n',namesArchive{idx2});
+        fprintf(fileIDLabel,'%d\n',label);
         %Store the maps into hdf5 datasets
-        curr_pos1 = store2hdf5('data1.h5',map1Mat,label,create,1000,curr_pos1);
-        curr_pos2 = store2hdf5('data2.h5',map2Mat,label,create,1000,curr_pos2);
-        create = false;
+%         curr_pos1 = store2hdf5('data1.h5',map1Mat,label,create,1000,curr_pos1);
+%         curr_pos2 = store2hdf5('data2.h5',map2Mat,label,create,1000,curr_pos2);
+%         create = false;
     end
     
     fprintf('Elapsed Time: %f\n',toc);
